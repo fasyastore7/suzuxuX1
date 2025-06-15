@@ -1,7 +1,9 @@
+const axios = require("axios");
 const PluginTemplate = require("@start/plugin/pluginTemplate");
-const path = require("path");
-const fs = require("fs");
 const { version: localVersion } = require("@DB/version.json");
+
+// Ganti sesuai repositori GitHub kamu
+const LATEST_URL = "https://raw.githubusercontent.com/fasyastore7/suzuxuX1/main/start/database/latest.json";
 
 class UpdateCheckPlugin extends PluginTemplate {
   constructor() {
@@ -16,32 +18,29 @@ class UpdateCheckPlugin extends PluginTemplate {
 
   async execute(msg) {
     try {
-      const latestPath = path.join(process.cwd(), "start", "database", "latest.json");
-      if (!fs.existsSync(latestPath)) {
-        return msg.reply("⚠️ _Tidak dapat memeriksa pembaruan. File `latest.json` tidak ditemukan._");
+      const res = await axios.get(LATEST_URL);
+      const latest = res.data;
+
+      if (!latest || typeof latest !== "object" || !latest.version) {
+        return msg.reply("❌ Format pembaruan dari server tidak valid.");
       }
 
-      const latestData = JSON.parse(fs.readFileSync(latestPath, "utf-8"));
-      const latestVersion = latestData.version || "unknown";
-      const updatedFiles = latestData.files || [];
-
-      if (latestVersion === localVersion) {
-        return msg.reply(
-          `⚠️ _Script sudah menggunakan versi terbaru._\n\n_Version : ${localVersion}_`
-        );
+      if (latest.version === localVersion) {
+        return msg.reply(`⚠️ _Script sudah menggunakan versi terbaru._\n\n_Version : ${localVersion}_`);
       }
 
-      let fileList = updatedFiles.length
+      const updatedFiles = latest.files || [];
+      const fileList = updatedFiles.length
         ? updatedFiles.map((file, i) => `${i + 1}. ${file}`).join("\n")
         : "_Tidak ada file yang tercantum_";
 
       return msg.reply(
         `*📦 Update tersedia!*\n\n` +
-        `*Version:* ${latestVersion}\n\n` +
+        `*Version:* ${latest.version}\n\n` +
         `*List update file:*\n${fileList}`
       );
     } catch (err) {
-      return msg.reply("❌ Gagal memeriksa pembaruan: " + err.message);
+      return msg.reply("❌ Gagal memeriksa pembaruan dari server: " + err.message);
     }
   }
 }
