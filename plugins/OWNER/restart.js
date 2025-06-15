@@ -1,4 +1,7 @@
 const PluginTemplate = require("@start/plugin/pluginTemplate");
+const fs = require("fs");
+const { restartFlagFile } = require("@start/config/paths");
+const { owner_number } = require("@settings/config");
 
 let isRestarting = false;
 
@@ -15,7 +18,7 @@ class RestartPlugin extends PluginTemplate {
 
   async execute(msg) {
     if (isRestarting) {
-      return msg.reply("♻️ Bot sedang dalam proses restart, harap tunggu sebentar...");
+      return msg.reply("♻️ Bot sedang dalam proses restart, harap tunggu...");
     }
 
     isRestarting = true;
@@ -25,11 +28,23 @@ class RestartPlugin extends PluginTemplate {
       "_Mohon tunggu beberapa detik hingga bot aktif kembali._"
     );
 
-    // Tambahkan delay singkat agar pesan sempat terkirim
+    const chatId = msg.remoteJid || `${owner_number[0]}@s.whatsapp.net`;
+    const data = {
+      chatId,
+      message: "✅ *Bot berhasil di-restart dan telah aktif kembali.*"
+    };
+
+    try {
+      fs.writeFileSync(restartFlagFile, JSON.stringify(data, null, 2), "utf-8");
+      console.log("📥 Restart flag disimpan di:", restartFlagFile);
+    } catch (err) {
+      console.warn("⚠️ Gagal menulis restart flag:", err.message);
+    }
+
     setTimeout(() => {
-      console.log("✅ Restarting bot...");
+      console.log("♻️ Restarting bot...");
       process.exit(0);
-    }, 2000); // 2 detik
+    }, 2000);
   }
 }
 
