@@ -1,0 +1,53 @@
+Saya sedang mengembangkan bot WhatsApp menggunakan library Baileys (fork WhiskeySockets). Bot ini memakai sistem plugin modular dan struktur folder yang dirancang untuk skalabilitas jangka panjang.
+
+Berikut struktur proyek saya:
+
+project-root/
+│
+├── main.js                      ← Titik masuk utama bot. Memeriksa versi Node.js, set timezone, load config, jalankan startup
+├── config.js                    ← Konfigurasi global: owner, nomor bot, prefix, API key, dll
+│
+├── core/
+│   ├── baileys/
+│   │   ├── connection.js        ← Koneksi ke WhatsApp (Baileys), support pairing code & event binding
+│   │   └── gracefulShutdown.js  ← Menangani proses keluar (SIGINT, SIGTERM), menutup plugin/instansi dengan rapi
+│   │
+│   ├── plugins/
+│   │   └── index.js             ← Plugin manager: meload semua plugin dari folder `plugins/`, menyimpannya dalam Map
+│   │
+│   ├── startup.js               ← Menampilkan info sistem (hostname, IP publik, RAM, uptime), status API, lalu memulai koneksi
+│
+├── core/handlers/
+│   ├── message.js               ← Handler `messages.upsert`, parsing awal & lempar ke messageProcessor
+│   └── update.js                ← Handler tambahan (group update, call, dsb), juga memuat update version
+│
+├── lib/
+│   ├── logger.js                ← Logging dengan warna, kategori, timestamp, dan format log yang konsisten
+│   ├── messageProcessor.js      ← Memproses pesan & mencocokkan ke plugin berdasarkan prefix, command, dsb
+│   ├── utils.js                 ← Fungsi umum: `sleep()`, `removeSpace()`, `sendMessageWithMentionNotQuoted()`, dll
+│   ├── version.js               ← Memuat dan memperbarui `version.json`
+│   ├── fileHelper.js            ← Fungsi bantu untuk `ensureJsonFile()` dan `saveJsonFile()` (khusus JSON sederhana)
+│
+│   ├── plugins/
+│   │   └── pluginTemplate.js    ← Template dasar plugin: sistem permission, method `safeReply`, dll
+│
+├── lib/parser/
+│   └── serializeMessage.js      ← Menyederhanakan struktur pesan Baileys agar mudah dipakai oleh plugin
+│
+├── plugins/
+│   ├── OWNER/                   ← Plugin untuk owner/developer
+│   │   ├── addowner.js
+│   │   ├── delowner.js
+│   │   ├── listowner.js
+│   ├── PREMIUM/                 ← Plugin untuk pengelolaan user premium
+│   │   ├── addpremium.js
+│   │   ├── delpremium.js
+│   │   ├── listpremium.js
+│   └── ...                      ← Plugin-plugin lain akan ditempatkan di folder sesuai kategori
+│
+├── database/
+│   ├── version.json             ← Menyimpan versi bot: `{ "version": "1.0.0" }`
+│   ├── premium.json             ← Daftar user premium dalam format array objek `{ number, added_by, added_at }`
+│   └── owner.json               ← Daftar owner aktif dalam format array objek `{ number, added_by, added_at }`
+│
+└── package.json                 ← Metadata proyek, dependensi, script startup, dan module-alias
