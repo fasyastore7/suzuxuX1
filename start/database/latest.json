@@ -1,7 +1,7 @@
 {
   "version": "1.0.2",
   "files": [
-    "plugins/OWNER/restart.js"
+    "plugins/OWNER/restart.js",
     "start/database/version.json"
   ]
 }
