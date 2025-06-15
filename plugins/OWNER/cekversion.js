@@ -1,6 +1,12 @@
 const PluginTemplate = require("@start/plugin/pluginTemplate");
-const pkg = require("baileys/package.json");
 const { version: botVersion } = require("@DB/version.json");
+
+let baileysVersion = "unknown";
+try {
+  baileysVersion = require("baileys/package.json").version;
+} catch (err) {
+  console.warn("⚠️ Gagal membaca versi Baileys:", err.message);
+}
 
 class CekVersionPlugin extends PluginTemplate {
   constructor() {
@@ -13,8 +19,6 @@ class CekVersionPlugin extends PluginTemplate {
   }
 
   async execute(message) {
-    const baileysVersion = pkg.version;
-
     const replyText =
       `*VERSI BOT & LIBRARY*\n\n` +
       `◧ ᴠᴇʀꜱɪ ꜱᴄ : ${botVersion}\n` +
